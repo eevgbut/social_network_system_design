@@ -29,7 +29,6 @@ paths:
         - Auth
       summary: Вход в систему
       description: Аутентификация пользователя и получение токена
-      operationId: login
       requestBody:
         required: true
         content:
@@ -55,7 +54,6 @@ paths:
         - Auth
       summary: Выход из системы
       description: Инвалидация токенов пользователя
-      operationId: logout
       responses:
         '200':
           description: Успешный выход
@@ -75,7 +73,6 @@ paths:
         - Posts
       summary: Создать новую публикацию
       description: Создание публикации с опциональными гео-меткой и фотографиями
-      operationId: createPost
       requestBody:
         required: true
         content:
@@ -123,7 +120,6 @@ paths:
         - Ratings
       summary: Оценить публикацию
       description: Оценка публикации по шкале от 1 до 5
-      operationId: ratePost
       parameters:
         - name: postId
           in: path
@@ -161,7 +157,6 @@ paths:
         - Comments
       summary: Добавить комментарий к публикации
       description: Добавление текстового комментария к публикации
-      operationId: addComment
       parameters:
         - name: postId
           in: path
@@ -201,7 +196,6 @@ paths:
         - User
       summary: Подписаться на пользователя
       description: Подписка на другого пользователя-путешественника
-      operationId: followUser
       requestBody:
         required: true
         content:
@@ -233,7 +227,6 @@ paths:
         - User
       summary: Отписаться от пользователя
       description: Отмена подписки на пользователя
-      operationId: unfollowUser
       requestBody:
         required: true
         content:
@@ -265,8 +258,7 @@ paths:
       description: |
         Получение ленты публикаций из подписок пользователя.
         Посты возвращаются в обратном хронологическом порядке.
-        За один раз возвращается не более 20 постов.
-      operationId: getFeed
+        В в зависимости от выбранного пользователем кол-ва постов на странице, на клиенте задается limit, но не больше 20).
       parameters:
         - name: offset
           in: query
@@ -306,7 +298,6 @@ paths:
         - Geo
       summary: Получить топ популярных мест
       description: Получение топ-100 популярных мест для путешествий
-      operationId: getTopPlaces
       responses:
         '200':
           description: Успешное получение списка мест
@@ -326,7 +317,6 @@ paths:
         - Geo
       summary: Получить публикации по месту
       description: Получение публикаций для конкретного места в хронологически убывающем порядке
-      operationId: getPlacePosts
       parameters:
         - name: placeId
           in: path
@@ -391,37 +381,6 @@ components:
         expiresIn:
           type: integer
           description: Время жизни access token в секундах
-        tokenType:
-          type: string
-          default: "Bearer"
-        user:
-          $ref: '#/components/schemas/UserProfile'
-      example:
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        expiresIn: 3600
-        tokenType: "Bearer"
-        user:
-          id: "550e8400-e29b-41d4-a716-446655440000"
-          email: "user@example.com"
-          username: "traveler123"
-          firstName: "Иван"
-          lastName: "Петров"
-    UserProfile:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        username:
-          type: string
-        lastName:
-          type: string
-        avatarUrl:
-          type: string
-          format: uri
     CreatePostRequest:
       type: object
       required:
@@ -584,14 +543,8 @@ components:
           type: string
         country:
           type: string
-        popularityScore:
-          type: number
-          format: float
         postCount:
           type: integer
-        thumbnailUrl:
-          type: string
-          format: uri
     PlacePostsResponse:
       type: object
       properties:
@@ -616,8 +569,6 @@ components:
         avatarUrl:
           type: string
           format: uri
-        followersCount:
-          type: integer
     SuccessResponse:
       type: object
       properties:
