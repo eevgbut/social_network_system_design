@@ -77,7 +77,7 @@
 
 ## Оценка дисков
 
-### Relational DB
+### Relational DB (PostgreSQL)
 
 ```
 Сapacity = 10 МБ/с * 86 400 * 365 = 315 TB
@@ -89,7 +89,7 @@ Disks = max(ceil(10), ceil(1), ceil(80)) = 80
 
 Итог: поскольку данных не много, но IOPS большой – выбираем диски небольшого объема, но в большом количестве.
 
-### Blob storage
+### Blob storage (Minio)
 
 ```
 Сapacity = 80 МБ/с * 86 400 * 365 = 2400 ТБ
