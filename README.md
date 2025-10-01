@@ -80,19 +80,23 @@
 ### Relational DB
 
 ```
-Сapacity = 100 МБ/с \* 86 400 \* 365 = 3 ТБ
-Disks_for_capacity = 3 ТБ / 2 ТБ = 1.5
-Disks_for_throughput = 110 МБ/с / 100 МБ/с = 1.1
-Disks_for_iops = 300 / 100 = 3
-Disks = max(ceil(1.5), ceil(1.1), ceil(3)) = 3
+Сapacity = 10 МБ/с * 86 400 * 365 = 315 TB
+Disks_for_capacity = 315 TB / 8 ТВ = 40
+Disks_for_throughput = 20 МБ/с / 100 МБ/с = ~1
+Disks_for_iops = 8000 / 100 = 80
+Disks = max(ceil(10), ceil(1), ceil(80)) = 80
 ```
+
+Итог: поскольку данных не много, но IOPS большой – выбираем диски небольшого объема, но в большом количестве.
 
 ### Blob storage
 
 ```
-Сapacity = 100 МБ/с \* 86 400 \* 365 = 3 ТБ
-Disks_for_capacity = 3 ТБ / 2 ТБ = 1.5
-Disks_for_throughput = 110 МБ/с / 100 МБ/с = 1.1
-Disks_for_iops = 300 / 100 = 3
-Disks = max(ceil(1.5), ceil(1.1), ceil(3)) = 3
+Сapacity = 80 МБ/с * 86 400 * 365 = 2400 ТБ
+Disks_for_capacity = 2400 ТБ / 32 ТБ = 75
+Disks_for_throughput = 80 МБ/с / 100 МБ/с = 1
+Disks_for_iops = 2300 / 100 = 23
+Disks = max(ceil(75), ceil(1), ceil(23)) = 75
 ```
+
+Итог: необходимо много дисков, выбираем 75 дешевых дисков по максимальному объему (по iops есть запас X3)
