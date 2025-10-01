@@ -72,3 +72,25 @@
 - трафик на чтение гео-раздела: `115 RPS * 50 МБ гео-данных = 6250 МБ/с = 6 ГБ/с` (геоданные загружаются батчами)
 
 - кол-во одновременных соединений `10 000 000 * 0.1 = 1000000`
+
+## Оценка дисков
+
+### Relational DB
+
+```
+Сapacity = 100 МБ/с \* 86 400 \* 365 = 3 ТБ
+Disks_for_capacity = 3 ТБ / 2 ТБ = 1.5
+Disks_for_throughput = 110 МБ/с / 100 МБ/с = 1.1
+Disks_for_iops = 300 / 100 = 3
+Disks = max(ceil(1.5), ceil(1.1), ceil(3)) = 3
+```
+
+### Blob storage
+
+```
+Сapacity = 100 МБ/с \* 86 400 \* 365 = 3 ТБ
+Disks_for_capacity = 3 ТБ / 2 ТБ = 1.5
+Disks_for_throughput = 110 МБ/с / 100 МБ/с = 1.1
+Disks_for_iops = 300 / 100 = 3
+Disks = max(ceil(1.5), ceil(1.1), ceil(3)) = 3
+```
