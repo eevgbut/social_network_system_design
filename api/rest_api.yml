@@ -114,7 +114,7 @@ paths:
                 $ref: '#/components/schemas/Error'
       security:
         - bearerAuth: []
-  /posts/{postId}/rate:
+  /posts/{postId}/rating:
     post:
       tags:
         - Ratings
@@ -133,7 +133,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RatePostRequest'
+              $ref: '#/components/schemas/RatingPostRequest'
       responses:
         '200':
           description: Оценка успешно сохранена
@@ -190,21 +190,21 @@ paths:
           description: Внутренняя ошибка сервера
       security:
         - bearerAuth: []
-  /user/follow:
+  /user/subscriptions:
     post:
       tags:
         - User
-      summary: Подписаться на пользователя
-      description: Подписка на другого пользователя-путешественника
+      summary: Подписаться на пользователя или отписаться от пользователя
+      description: Подписка или отписка на/от другого пользователя-путешественника
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FollowRequest'
+              $ref: '#/components/schemas/SubscriptionsRequest'
       responses:
         '200':
-          description: Успешная подписка
+          description: Успешная подписка/отписка
           content:
             application/json:
               schema:
@@ -217,35 +217,6 @@ paths:
           description: Пользователь не найден
         '409':
           description: Уже подписаны
-        '500':
-          description: Внутренняя ошибка сервера
-      security:
-        - bearerAuth: []
-  /user/unfollow:
-    post:
-      tags:
-        - User
-      summary: Отписаться от пользователя
-      description: Отмена подписки на пользователя
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FollowRequest'
-      responses:
-        '200':
-          description: Успешная отписка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '400':
-          description: Неверные входные данные
-        '401':
-          description: Пользователь не авторизован
-        '404':
-          description: Пользователь не найден или подписка не найдена
         '500':
           description: Внутренняя ошибка сервера
       security:
@@ -292,7 +263,7 @@ paths:
           description: Внутренняя ошибка сервера
       security:
         - bearerAuth: []
-  /geo/top-places:
+  /geo/places:
     get:
       tags:
         - Geo
@@ -304,7 +275,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TopPlacesResponse'
+                $ref: '#/components/schemas/PlacesResponse'
         '401':
           description: Пользователь не авторизован
         '500':
@@ -459,7 +430,7 @@ components:
           type: string
         placeId:
           type: string
-    RatePostRequest:
+    RatingPostRequest:
       type: object
       required:
         - rating
@@ -502,7 +473,7 @@ components:
           format: date-time
         userInfo:
           $ref: '#/components/schemas/UserInfo'
-    FollowRequest:
+    SubscriptionsRequest:
       type: object
       required:
         - targetUserId
@@ -526,7 +497,7 @@ components:
         nextOffset:
           type: integer
           description: Смещение для следующей загрузки
-    TopPlacesResponse:
+    PlacesResponse:
       type: object
       properties:
         places:
