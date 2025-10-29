@@ -1,0 +1,597 @@
+openapi: 3.0.4
+info:
+  title: API социальной сети для путешественников
+  description: |-
+    API для социальной сети путешественников в рамках курса по System Design.
+    Основные функции: публикация постов, лента, гео-раздел, подписки.
+  version: 1.0.0
+
+tags:
+  - name: Auth
+    description: Авторизация и аутентификация
+  - name: Posts
+    description: Управление публикациями
+  - name: Feed
+    description: Лента публикаций
+  - name: Geo
+    description: Гео-раздел с популярными местами
+  - name: User
+    description: Управление пользователями и подписками
+  - name: Ratings
+    description: Оценки публикаций
+  - name: Comments
+    description: Комментарии к публикациям
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Вход в систему
+      description: Аутентификация пользователя и получение токена
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Неверные учетные данные
+        '500':
+          description: Внутренняя ошибка сервера
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Выход из системы
+      description: Инвалидация токенов пользователя
+      responses:
+        '200':
+          description: Успешный выход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Неавторизован
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /posts:
+    post:
+      tags:
+        - Posts
+      summary: Создать новую публикацию
+      description: Создание публикации с опциональными гео-меткой и фотографиями
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '200':
+          description: Публикация успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Неверные входные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Пользователь не авторизован
+        '413':
+          description: Превышен лимит количества фотографий
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+  /posts/{postId}/rate:
+    post:
+      tags:
+        - Ratings
+      summary: Оценить публикацию
+      description: Оценка публикации по шкале от 1 до 5
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID публикации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatePostRequest'
+      responses:
+        '200':
+          description: Оценка успешно сохранена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Неверная оценка
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Публикация не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /posts/{postId}/comments:
+    post:
+      tags:
+        - Comments
+      summary: Добавить комментарий к публикации
+      description: Добавление текстового комментария к публикации
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID публикации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Комментарий успешно добавлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '403':
+          description: По итогу аутентификации доступ запрещен
+        '404':
+          description: Публикация не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /user/follow:
+    post:
+      tags:
+        - User
+      summary: Подписаться на пользователя
+      description: Подписка на другого пользователя-путешественника
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowRequest'
+      responses:
+        '200':
+          description: Успешная подписка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Пользователь не найден
+        '409':
+          description: Уже подписаны
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /user/unfollow:
+    post:
+      tags:
+        - User
+      summary: Отписаться от пользователя
+      description: Отмена подписки на пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowRequest'
+      responses:
+        '200':
+          description: Успешная отписка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Неверные входные данные
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Пользователь не найден или подписка не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /feed:
+    get:
+      tags:
+        - Feed
+      summary: Получить ленту публикаций
+      description: |
+        Получение ленты публикаций из подписок пользователя.
+        Посты возвращаются в обратном хронологическом порядке.
+        В в зависимости от выбранного пользователем кол-ва постов на странице, на клиенте задается limit, но не больше 20).
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Смещение для пагинации
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 20
+          description: Количество постов (максимум 20)
+      responses:
+        '200':
+          description: Успешное получение ленты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedResponse'
+        '400':
+          description: Неверные параметры запроса
+        '401':
+          description: Пользователь не авторизован
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /geo/top-places:
+    get:
+      tags:
+        - Geo
+      summary: Получить топ популярных мест
+      description: Получение топ-100 популярных мест для путешествий
+      responses:
+        '200':
+          description: Успешное получение списка мест
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopPlacesResponse'
+        '401':
+          description: Пользователь не авторизован
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+  /geo/places/{placeId}/posts:
+    get:
+      tags:
+        - Geo
+      summary: Получить публикации по месту
+      description: Получение публикаций для конкретного места в хронологически убывающем порядке
+      parameters:
+        - name: placeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID места
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Смещение для пагинации
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 20
+          description: Количество постов (максимум 20)
+      responses:
+        '200':
+          description: Успешное получение публикаций
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlacePostsResponse'
+        '401':
+          description: Пользователь не авторизован
+        '404':
+          description: Место не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+          description: Email или username пользователя
+        password:
+          type: string
+      example:
+        login: "user@example.com"
+        password: "securePass"
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Время жизни access token в секундах
+    CreatePostRequest:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Текст публикации
+        geoTag:
+          type: object
+          description: Гео-метка (опционально)
+          properties:
+            latitude:
+              type: number
+              format: float
+            longitude:
+              type: number
+              format: float
+            placeName:
+              type: string
+        imageIds:
+          type: array
+          maxItems: 10
+          description: Список ID загруженных фотографий (максимум 10)
+          items:
+            type: string
+            format: uuid
+      example:
+        description: "Прекрасный вид на горы во время восхода солнца!"
+        geoTag:
+          latitude: 43.25667
+          longitude: 42.84556
+          placeName: "Эльбрус"
+        imageIds: ["550e8400-e29b-41d4-a716-446655440000"]
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        geoTag:
+          $ref: '#/components/schemas/GeoTag'
+        imageUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        createdAt:
+          type: string
+          format: date-time
+        rating:
+          type: number
+          format: float
+          description: Средняя оценка
+        commentsCount:
+          type: integer
+        userInfo:
+          $ref: '#/components/schemas/UserInfo'
+    GeoTag:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        placeName:
+          type: string
+        placeId:
+          type: string
+    RatePostRequest:
+      type: object
+      required:
+        - rating
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Оценка от 1 до 5
+      example:
+        rating: 5
+    CreateCommentRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Текст комментария
+      example:
+        text: "Восхитительные фотографии! Обязательно посещу это место!"
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        postId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        userInfo:
+          $ref: '#/components/schemas/UserInfo'
+    FollowRequest:
+      type: object
+      required:
+        - targetUserId
+      properties:
+        targetUserId:
+          type: string
+          format: uuid
+          description: ID пользователя для подписки/отписки
+      example:
+        targetUserId: "550e8400-e29b-41d4-a716-446655440000"
+    FeedResponse:
+      type: object
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        hasMore:
+          type: boolean
+          description: Есть ли еще посты для загрузки
+        nextOffset:
+          type: integer
+          description: Смещение для следующей загрузки
+    TopPlacesResponse:
+      type: object
+      properties:
+        places:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/GeoPlace'
+    GeoPlace:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        postCount:
+          type: integer
+    PlacePostsResponse:
+      type: object
+      properties:
+        place:
+          $ref: '#/components/schemas/GeoPlace'
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        hasMore:
+          type: boolean
+        nextOffset:
+          type: integer
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT токен авторизации
+
+security:
+  - bearerAuth: []
